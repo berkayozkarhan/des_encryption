@@ -8,7 +8,7 @@
 
 unsigned long long mix_original_key(unsigned long long original_key)
 {
-    unsigned long long mixed_key = 0UL;
+    unsigned long long mixed_key = 0ULL;
     for(int i=0;i<56;i++)
     {
         unsigned long long bit = BIT(original_key, ( 64 - pc1[i] ) );
@@ -19,6 +19,18 @@ unsigned long long mix_original_key(unsigned long long original_key)
     }
 
     return mixed_key;
+}
+
+unsigned long long mix_with_pc2(unsigned long long cn_dn)
+{
+    unsigned long long result = 0ULL;
+    for(int i=0;i<48;++i)
+    {
+        unsigned int shift = pc2[i];
+        unsigned long long bit = BIT(cn_dn, ( 56 - shift ) );
+        result |= ( bit << ( 48 - i - 1 ));
+    }
+    return result;
 }
 
 unsigned long long
@@ -61,13 +73,19 @@ Encrypt(unsigned long long data,
     {
 
         //unsigned long long cn_dn = ( ( c_values[i] << 28 ) | ( d_values[i] ) ) & ( 0xFFFFFFFFFFFFFF );
-        unsigned long num = c_values[i];
+        unsigned long num = c_values[i+1];
         unsigned long long cn = num << 28;
-        unsigned long long dn = d_values[i];
-        unsigned long long target = cn + dn;
-        K_values[i] = target;
-        printf("c[%d]d[%d] : %llu\n", i, i, K_values[i]);
+        unsigned long long dn = d_values[i+1];
+        unsigned long long cn_dn = cn + dn;
+
+
+        K_values[i] = mix_with_pc2(cn_dn);
+        //printf("c[%d]d[%d] : %llu\n", i, i, K_values[i]);
+        printf("input : %16llx, output : %16llx\n", cn_dn, K_values[i]);
+
     }
+
+    int break_point = 9898;
 
 
 

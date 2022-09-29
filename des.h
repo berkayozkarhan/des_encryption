@@ -52,7 +52,7 @@ static unsigned char pc2[48] = { 14, 17, 11, 24, 1, 5,
 
 unsigned long long Encrypt(unsigned long long data, unsigned long long key);
 unsigned long long mix_original_key(unsigned long long original_key);
-
+unsigned long long mix_with_pc2(unsigned long long cn_dn);
 
 
 #endif // DES_H_INCLUDED
