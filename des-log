@@ -101,6 +101,65 @@ input :   f0ccaaf556678f, output :     cb3d8b0e17f5
 
 
 
+S boxes:  input : 6 bits, output : 4 bits
+
+S(xxxxxx) --> zzzz z=?, x=?
+
+xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx --> 8x6 bits. (xor_result)
+
+K1+E(R0) = 011000 010001 011110 111010 100001 100110 010100 100111
+
+K1+E(R0) = (_B1_) (_B2_) (_B3_) (_B4_) (_B5_) (_B6_) (_B7_) (_B8_)
+
+B1 = 011000
+B2 = 010001
+B3 = 011110
+B4 = 111010
+B5 = 100001
+B6 = 100110
+B7 = 010100
+B8 = 100111
+
+S1(B1)S2(B2)S3(B3)S4(B4)S5(B5)S6(B6)S7(B7)S8(B8)
+
+Si(Bi) : output of Sboxes
+
+Every Si function produces 4 bit output against 6 bit input.
+
+S1(B) calculation:
+- Take B's first and last bit, express them as a binary number, name this number as i.
+    Example : zxxxxy
+            --> i = zy, z,y E [0,1]
+- Take B's middle 4 bits, express them as binary number, name this number as j
+    Example : zabcdy
+            --> j = abcd, a,b,c,d E [0,1]
+            --> for this operation, shift the B to right 1 time, and do the & operation with the number 0xF
+
+- Take the number at (i,j) index from S1 array. this number is output.
+
+S1(zabcdx) = S1[zx][abcd]
+S1(011011) = 0101 --> i = 01=1, j = 1101=13, S1[1-1][13-1] // Because of array index.
+
+Constants:
+Get 8 bit blocks.
+
+     000000 000000 000000 000000 000000 000000 000000 000000
+
+B1 = 111111000000000000000000000000000000000000000000 = 0xFC0000000000
+B2 = 000000111111000000000000000000000000000000000000 = 0x03F000000000
+B3 = 000000000000111111000000000000000000000000000000 = 0x000FC0000000
+B4 = 000000000000000000111111000000000000000000000000 = 0x00003F000000
+B5 = 000000000000000000000000111111000000000000000000 = 0x000000FC0000
+B6 = 000000000000000000000000000000111111000000000000 = 0x00000003F000
+B7 = 000000000000000000000000000000000000111111000000 = 0x000000000FC0
+B8 = 000000000000000000000000000000000000000000111111 = 0x00000000003F
+
+
+            
+
+
+
+
 
 
           
