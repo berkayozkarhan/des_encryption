@@ -23,6 +23,21 @@ unsigned long long f_function(unsigned int RVal, unsigned long long KVal)
     }
 
     unsigned long long xor_result = RVal_new ^ KVal;
+    int i = 0;
+    while(i<8)
+    {
+        unsigned int B_n = B(xor_result, ++i);
+        // calculate S box.
+        int row = 0, column = 0;  // 0x20 = 100000, //0x01 = 000001
+        row |= B_n & 1;
+        row |= (((B_n & 0x20) >> 5 ) << 1 );
+        column |= ((B_n >> 1) & 0xF);
+        printf("row : %d, column : %d\n", row, column);
+        // get number at SN[row][column]
+        int sbox_out = S_ARRAYS[i-1][row+1][column+3];
+        printf("sbox_out : %d\n", sbox_out);
+        printf("********************\n");
+    }
 
     return RVal_new;
 }
