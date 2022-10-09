@@ -6,6 +6,28 @@
 
 
 
+unsigned long long f_function(unsigned int RVal, unsigned long long KVal)
+{
+
+    // make RVal 48 bit.
+    unsigned long long RVal_new = 0ULL;
+    for(int i=0;i<48; i++)
+    {
+        int shifter = e_bit_selection_table[i];
+        unsigned long long bit = BIT(RVal, ( 32 - shifter ) );
+        #ifdef DEBUG
+            printf("bit %llu : %x\n", bit, i);
+        #endif // DEBUG
+        RVal_new |= ( bit << ( 48 -i - 1) );
+        int abcd = 9;
+    }
+
+    unsigned long long xor_result = RVal_new ^ KVal;
+
+    return RVal_new;
+}
+
+
 unsigned long long mix_original_key(unsigned long long original_key)
 {
     unsigned long long mixed_key = 0ULL;
@@ -21,6 +43,24 @@ unsigned long long mix_original_key(unsigned long long original_key)
     return mixed_key;
 }
 
+
+unsigned long long mix_message_with_ip2(unsigned long long message)
+{
+    unsigned long long mixed_message = 0ULL;
+    for(int i=0;i<64;i++)
+    {
+        unsigned long long bit = BIT(message, 64 - ip[i] );
+        #ifdef DEBUG
+            printf("bit %llu : %x\n", bit, i);
+        #endif // DEBUG
+            mixed_message |= ( bit << ( 64 - i - 1 ) );
+    }
+    return mixed_message;
+
+}
+
+
+
 unsigned long long mix_with_pc2(unsigned long long cn_dn)
 {
     unsigned long long result = 0ULL;
@@ -33,16 +73,9 @@ unsigned long long mix_with_pc2(unsigned long long cn_dn)
     return result;
 }
 
-unsigned long long
-Encrypt(unsigned long long data,
-                            unsigned long long key)
+void generate_sub_keys_from_original_key(unsigned long long original_key, unsigned long long sub_keys[])
 {
-
-    //int right = RIGHT(data);
-    //int left = LEFT(data);
-
-    unsigned long long mixed_key = mix_original_key(key);  // OK.
-
+    unsigned long long mixed_key = mix_original_key(original_key);  // OK.
     unsigned long c_values[17] = {0};
     unsigned long d_values[17] = {0};
     unsigned int shift_table[16] = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
@@ -79,13 +112,43 @@ Encrypt(unsigned long long data,
         unsigned long long cn_dn = cn + dn;
 
 
-        K_values[i] = mix_with_pc2(cn_dn);
-        //printf("c[%d]d[%d] : %llu\n", i, i, K_values[i]);
-        printf("input : %16llx, output : %16llx\n", cn_dn, K_values[i]);
+        sub_keys[i] = mix_with_pc2(cn_dn);
+        printf("input : %16llx, output : %16llx\n", cn_dn, sub_keys[i]);
 
     }
+}
 
-    int break_point = 9898;
+
+unsigned long long
+Encrypt(unsigned long long data,
+                            unsigned long long key)
+{
+
+    //int right = RIGHT(data);
+    //int left = LEFT(data);
+    unsigned long long K_values[16] = {0};
+    generate_sub_keys_from_original_key(key, K_values);
+    unsigned long long mixed_msg = mix_message_with_ip2(data);
+
+
+    unsigned int L_n[16]={0}
+                , R_n[16] = {0};
+    L_n[0] = RIGHT(mixed_msg), R_n[0] = LEFT(mixed_msg);
+
+    //Ln = Rn-1
+    //Rn = Ln-1 + f(Rn-1, Kn)
+    for(int i=1;i<15;i++)
+    {
+        L_n[i] = R_n[i - 1];
+        R_n[i] = L_n[i-1] ^ f_function(R_n[i-1], K_values[i-1]);
+    }
+
+
+
+
+
+
+
 
 
 
