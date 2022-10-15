@@ -5,6 +5,34 @@
 
 
 
+unsigned long long mix_with_reverse_ip_array(unsigned long long val)
+{
+    unsigned long long result = 0ULL;
+    for(int i=0;i<64;i++)
+    {
+        int shifter = reverse_ip[i];
+        unsigned long long bit = BIT(val, (64 - shifter));
+        result |= (bit << (64 - i - 1));
+    }
+    return result;
+}
+
+
+
+
+unsigned int mix_with_p_table(unsigned int sbox_out)
+{
+    unsigned int mixed = 0u;
+    for(int i=0; i<32; i++)
+    {
+        unsigned int bit = BIT(sbox_out, (32-(p[i])));
+        mixed |= (bit << ( 32 - i - 1));
+    }
+    return mixed;
+}
+
+
+
 
 unsigned long long f_function(unsigned int RVal, unsigned long long KVal)
 {
@@ -24,6 +52,7 @@ unsigned long long f_function(unsigned int RVal, unsigned long long KVal)
 
     unsigned long long xor_result = RVal_new ^ KVal;
     int i = 0;
+    unsigned int out = 0;
     while(i<8)
     {
         unsigned int B_n = B(xor_result, ++i);
@@ -34,12 +63,16 @@ unsigned long long f_function(unsigned int RVal, unsigned long long KVal)
         column |= ((B_n >> 1) & 0xF);
         printf("row : %d, column : %d\n", row, column);
         // get number at SN[row][column]
-        int sbox_out = S_ARRAYS[i-1][row+1][column+3];
-        printf("sbox_out : %d\n", sbox_out);
-        printf("********************\n");
+        unsigned int sbox_out = S_ARRAYS[i-1][row][column];
+        printf("sbox_out[%d] : %d\n", i, sbox_out);
+        out |= (sbox_out << 4 * (8 - i));
     }
 
-    return RVal_new;
+    // mix with P table.
+
+    unsigned int f_result = mix_with_p_table(out);
+
+    return f_result;
 }
 
 
@@ -146,29 +179,22 @@ Encrypt(unsigned long long data,
     unsigned long long mixed_msg = mix_message_with_ip2(data);
 
 
-    unsigned int L_n[16]={0}
-                , R_n[16] = {0};
+    unsigned long long L_n[17]={0}
+                , R_n[17] = {0};
     L_n[0] = RIGHT(mixed_msg), R_n[0] = LEFT(mixed_msg);
 
     //Ln = Rn-1
     //Rn = Ln-1 + f(Rn-1, Kn)
-    for(int i=1;i<15;i++)
+    for(int i=1;i<=16;i++)
     {
         L_n[i] = R_n[i - 1];
         R_n[i] = L_n[i-1] ^ f_function(R_n[i-1], K_values[i-1]);
     }
 
+    unsigned long long tar = (R_n[16] << 32) | L_n[16];
+
+    unsigned long long encrypted_message = mix_with_reverse_ip_array(tar);
 
 
-
-
-
-
-
-
-
-
-
-
-    return 0ULL;
+    return encrypted_message;
 }
