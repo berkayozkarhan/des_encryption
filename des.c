@@ -1,9 +1,24 @@
 #include "des.h"
-
 #include <stdio.h>
 #define DEBUG 0
 
 
+unsigned long long mix_with_array(unsigned long long data,
+                                    unsigned char mixer_array[],
+                                        int mix_array_length,
+                                            int input_size_bits,
+                                                int output_size_bits)
+{
+    //still in progress.
+    unsigned long long result = 0ULL;
+    for(int i=0;i<input_size_bits;i++)
+    {
+        int shifter = mixer_array[i];
+        unsigned long long bit = BIT(data, (input_size_bits - shifter));
+        result |= (bit << (output_size_bits - i - 1));
+    }
+    return result;
+}
 
 unsigned long long mix_with_reverse_ip_array(unsigned long long val)
 {
@@ -17,9 +32,6 @@ unsigned long long mix_with_reverse_ip_array(unsigned long long val)
     return result;
 }
 
-
-
-
 unsigned int mix_with_p_table(unsigned int sbox_out)
 {
     unsigned int mixed = 0u;
@@ -30,8 +42,6 @@ unsigned int mix_with_p_table(unsigned int sbox_out)
     }
     return mixed;
 }
-
-
 
 
 unsigned long long f_function(unsigned int RVal, unsigned long long KVal)
@@ -107,8 +117,6 @@ unsigned long long mix_message_with_ip2(unsigned long long message)
 
 }
 
-
-
 unsigned long long mix_with_pc2(unsigned long long cn_dn)
 {
     unsigned long long result = 0ULL;
@@ -166,14 +174,10 @@ void generate_sub_keys_from_original_key(unsigned long long original_key, unsign
     }
 }
 
-
 unsigned long long
 Encrypt(unsigned long long data,
                             unsigned long long key)
 {
-
-    //int right = RIGHT(data);
-    //int left = LEFT(data);
     unsigned long long K_values[16] = {0};
     generate_sub_keys_from_original_key(key, K_values);
     unsigned long long mixed_msg = mix_message_with_ip2(data);

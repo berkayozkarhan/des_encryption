@@ -147,5 +147,6 @@ unsigned long long f_function(unsigned int RVal, unsigned long long KVal);
 unsigned int mix_with_p_table(unsigned int sbox_out);
 void generate_sub_keys_from_original_key(unsigned long long original_key, unsigned long long sub_keys[]);
 unsigned long long mix_with_reverse_ip_array(unsigned long long val);
+unsigned long long mix_with_array(unsigned long long data, unsigned char mixer_array[], int mix_array_length, int input_size_bits, int output_size_bits);
 
 #endif // DES_H_INCLUDED
