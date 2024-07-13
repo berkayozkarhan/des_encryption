@@ -1,43 +1,55 @@
-OUTPUT = main
-DES_SRC_DIR = src
-MAKE_COMMAND = make
-
 CURRENT_DIR = $(shell pwd)
+BUILD_DIR = $(CURRENT_DIR)/build
 
-OBJ_DIR = obj
-BIN_DIR = bin
+MODULE_NAME = app
 
-SRCS := main.c
-OBJS = $(SRCS:%.c=%.o)
-TARGET_OBJ = $(OBJ_DIR)/$(OBJS)
+APP_OBJ_DIR = $(BUILD_DIR)/$(MODULE_NAME)/obj
+APP_BIN_DIR = $(BUILD_DIR)/$(MODULE_NAME)/bin
 
-INCLUDE_DIR = $(DES_SRC_DIR)/include
+APP_DIRECTORIES := $(APP_OBJ_DIR) $(APP_BIN_DIR)
 
-INCLUDE_FLAGS = -I$(INCLUDE_DIR)
-LIB_DIR = $(CURRENT_DIR)/lib
+MODULE_OUTPUT = $(APP_BIN_DIR)/main
+
+DES_MODULE_NAME = des
+
+DES_SRC_DIR = src/$(DES_MODULE_NAME)
+DES_INCLUDE_DIR = $(DES_SRC_DIR)/include
+
+DES_MODULE_DIR = $(BUILD_DIR)/$(DES_MODULE_NAME)
+DES_LIB_DIR = $(DES_MODULE_DIR)/lib
+
 
 DES_LIB_NAME = des.so
-DES_LIB = $(LIB_DIR)/$(DES_LIB_NAME)
+DES_LIB = $(DES_LIB_DIR)/$(DES_LIB_NAME)
+
+
+SRCS := main.c
+OBJS := $(patsubst %.c, $(APP_OBJ_DIR)/%.o, $(SRCS))
 
 CC = /usr/bin/gcc
+LINKER_FLAGS = -L$(DES_LIB_DIR)
+INCLUDE_FLAGS = -I$(DES_INCLUDE_DIR)
 
-LINKER_FLAGS = -L$(LIB_DIR)
 
-all: prepare des_lib $(OUTPUT) 
+all: prepare modules $(MODULE_OUTPUT)
 
-$(OUTPUT): $(SRCS)
-	gcc -o $(BIN_DIR)/$@ $< $(DES_LIB) $(INCLUDE_FLAGS) $(LINKER_FLAGS)
 
-des_lib:
+$(MODULE_OUTPUT): $(OBJS)
+	$(CC) -o $@ $< $(DES_LIB) $(INCLUDE_FLAGS) $(LINKER_FLAGS)
+
+
+$(OBJS): $(SRCS)
+	$(CC) -c -o $@ $(INCLUDE_FLAGS) $<
+
+
+modules:
 	cd src && make all
 
+
 prepare:
-	mkdir -p $(LIB_DIR)
-	mkdir -p $(OBJ_DIR)
-	mkdir $(BIN_DIR)
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(APP_DIRECTORIES)
+
 
 clean:
-	rm -rf lib
-	rm -rf obj
-	rm -rf bin
-	cd src && make clean
+	rm -rf $(BUILD_DIR)
