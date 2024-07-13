@@ -12,7 +12,7 @@ int main(void)
     unsigned long long encrypted_message = Encrypt(test_msg_1, key);
     unsigned long long encrypted_message2 = Encrypt(encrypted_message, key);
     unsigned long long encrypted_message3 = Encrypt(encrypted_message2, key);
-    printf("encrypted message : 0x%lx\n", encrypted_message);
-    printf("encrypted message2 : 0x%lx\n", encrypted_message2);
-    printf("encrypted message3 : 0x%lx\n", encrypted_message3);
+    printf("encrypted message : 0x%llx\n", encrypted_message);
+    printf("encrypted message2 : 0x%llx\n", encrypted_message2);
+    printf("encrypted message3 : 0x%llx\n", encrypted_message3);
 }
