@@ -1,42 +1,44 @@
-MODULE_NAME = des
-
 PROJECT_ROOT_DIR 	= ..
 CURRENT_DIR 		= $(shell pwd)
-SOURCE_DIR 			= $(CURRENT_DIR)
-OBJ_DIR 			= $(CURRENT_DIR)/obj
+PROJECT_BUILD_DIR = $(PROJECT_ROOT_DIR)/build
 
-INCLUDE_DIR 		= $(CURRENT_DIR)/include
-OUTPUT_DIR 			= $(PROJECT_ROOT_DIR)/lib
 
-SRCS := $(wildcard *.c)
-OBJS := $(SRCS:%.c=%.o)
-TARGET_OBJ = $(OBJ_DIR)/$(OBJS)
+DES_MODULE_NAME = des
+DES_MODULE_SOURCE_DIR	= $(CURRENT_DIR)/$(DES_MODULE_NAME)
+DES_INCLUDE_DIR 		= $(CURRENT_DIR)/$(DES_MODULE_NAME)/include
 
-TARGET = $(MODULE_NAME).so
+DES_MODULE_OBJ_DIR 			= $(PROJECT_BUILD_DIR)/$(DES_MODULE_NAME)/obj
+DES_OUTPUT_DIR 			= $(PROJECT_BUILD_DIR)/des/lib
 
-OUTPUT = $(MODULE_NAME).so
+DES_DIRECTORIES := $(DES_MODULE_OBJ_DIR) $(DES_OUTPUT_DIR)
 
-INCLUDE_FLAGS = -I$(INCLUDE_DIR)
 
-COMPILER_FLAGS = -fPIC --shared 
+SRCS := $(wildcard $(DES_MODULE_SOURCE_DIR)/*.c)
+OBJS := $(patsubst $(DES_MODULE_SOURCE_DIR)/%.c, $(DES_MODULE_OBJ_DIR)/%.o, $(SRCS))
+
+
+TARGET = $(DES_OUTPUT_DIR)/$(DES_MODULE_NAME).so
 
 CC = /usr/bin/gcc
+COMPILER_FLAGS = -fPIC --shared 
+INCLUDE_FLAGS = -I$(DES_INCLUDE_DIR)
 
 
 all: prepare $(TARGET)
 
-$(TARGET): $(TARGET_OBJ)
-	$(CC) $(COMPILER_FLAGS) -o $(OUTPUT_DIR)/$@ $(TARGET_OBJ)
 
-$(TARGET_OBJ): $(SRCS)
-	$(CC) -c -o $(TARGET_OBJ) $(INCLUDE_FLAGS) $(SRCS)
-	
+$(TARGET): $(OBJS)
+	$(CC) $(COMPILER_FLAGS) -o $@ $(OBJS)
+
+
+$(OBJS): $(SRCS)
+	$(CC) -c -o $(OBJS) $(INCLUDE_FLAGS) $(SRCS)
+
 
 prepare:
-	mkdir -p ../lib
-	mkdir -p obj
+	mkdir -p $(DES_DIRECTORIES)
+
 clean:
-	rm -rf $(OBJ_DIR)
-	rm -rf $(OUTPUT_DIR)
+	rm -rf $(PROJECT_BUILD_DIR)/$(DES_MODULE_NAME)
 	
 
